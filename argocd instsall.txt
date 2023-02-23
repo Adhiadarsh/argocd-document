@@ -1,0 +1,70 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  workspaces:
+  - name: shared-workspace
+  params:
+  - name: deployment-name
+    type: string
+    description: name of the deployment to be patched
+  - name: git-url
+    type: string
+    description: url of the git repo for the code of deployment
+  - name: git-revision
+    type: string
+    description: revision to be used from repo of the code for deployment
+    default: "release-tech-preview-3"
+  - name: IMAGE
+    type: string
+    description: image to be built from the code
+
+  tasks:
+  - name: fetch-repository
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: subdirectory
+      value: ""
+    - name: deleteExisting
+      value: "true"
+    - name: master
+      value: $(params.git-revision)
+  - name: build-image
+
+
+    
+intall in work station argocd
+
+1.curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+2.sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd 
+3.rm argocd-linux-amd64
+
+
+argocd login in work station 
+
+1.argoPass=$(oc get secret/openshift-gitops-cluster -n openshift-gitops -o jsonpath='{.data.admin\.password}' | base64 -d)
+echo $argoPass
+
+2.argoURL=$(oc get route openshift-gitops-server -n openshift-gitops -o jsonpath='{.spec.host}{"\n"}')
+echo $argoURL
+
+
+
+argocd login --insecure --grpc-web $argoURL  --username admin --password $argoPass
+
+
+3.argocd login --insecure --grpc-web $argoURL  --username admin --password $argoPass
+
+4.argocd cluster add
+   ----- copy defalt:.......
+
+5.argocd cluster add "cluster url".
+
